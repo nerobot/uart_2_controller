@@ -1,0 +1,34 @@
+if &cp | set nocp | endif
+let s:cpo_save=&cpo
+set cpo&vim
+map! <S-Insert> *
+vmap  "*d
+map ; :
+vmap gx <Plug>NetrwBrowseXVis
+nmap gx <Plug>NetrwBrowseX
+nnoremap <SNR>73_: :=v:count ? v:count : ''
+vnoremap <silent> <Plug>NetrwBrowseXVis :call netrw#BrowseXVis()
+nnoremap <silent> <Plug>NetrwBrowseX :call netrw#BrowseX(expand((exists("g:netrw_gx")? g:netrw_gx : '<cfile>')),netrw#CheckIfRemote())
+map <F2> :NERDTreeToggle
+vmap <C-Del> "*d
+vmap <S-Del> "*d
+vmap <C-Insert> "*y
+vmap <S-Insert> "-d"*P
+nmap <S-Insert> "*P
+imap jj 
+inoremap { {}<Up>o
+let &cpo=s:cpo_save
+unlet s:cpo_save
+set autoindent
+set background=dark
+set expandtab
+set exrc
+set guifont=Lucida_Sans_Typewriter:h10
+set helplang=en
+set makeprg=ceedling
+set runtimepath=~/vimfiles,~\\.vim\\bundle\\Vundle.vim,~\\.vim\\bundle\\vim-fugitive,~\\.vim\\bundle\\syntastic,~\\.vim\\bundle\\nerdtree,~\\.vim\\bundle\\vim-clang-format,C:\\Program\ Files\\Vim/vimfiles,C:\\Program\ Files\\Vim\\vim81,C:\\Program\ Files\\Vim/vimfiles/after,~/vimfiles/after,~\\ownCloud2\\vim,~/.vim/bundle/Vundle.vim/,~\\.vim\\bundle\\Vundle.vim/after,~\\.vim\\bundle\\vim-fugitive/after,~\\.vim\\bundle\\syntastic/after,~\\.vim\\bundle\\nerdtree/after,~\\.vim\\bundle\\vim-clang-format/after
+set shellslash
+set shiftwidth=4
+set tabstop=4
+set window=62
+" vim: set ft=vim :
