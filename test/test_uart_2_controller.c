@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Library test list
 //
-//  Sending a string
+//  # Sending a string
 //      * calling send_string will cause all bytes to be sent to tx2buf
 //      * for each byte sent, tx full will be checked.
 //          * if buffer is full, do nothing
@@ -11,6 +11,11 @@
 //          * if it is empty, return
 //          * if it is not empty, keep checking until it is.
 //
+//  # Receiving data
+//  ## Receive string
+//  * when rxbuf has data, save data to array, when byte is '\0' added to array and return value - done
+//  * when rxbuf is empty, keep checking until there is data available - done
+//  
 
 #include "unity.h"
 #include "uart_2_controller.h"
@@ -112,4 +117,46 @@ void test_send_string_will_keep_checking_for_tx_reg_to_be_empty_before_returning
     uart_2_driver_tx_reg_is_empty_ExpectAndReturn(true);
 
     uart_2_controller_send_string(string, string_size);   
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Receiving data
+//
+
+void test_uart_2_driver_receive_string_all_ok(void)
+{
+    char expected_string[] = "Hello world\0";
+    char received_string[16];
+    uint8_t i = 0;
+    
+    for (i = 0; i < 12; i++)
+    {
+        uart_2_driver_rx_buff_is_empty_ExpectAndReturn(true);
+        uart_2_driver_get_rx_reg_ExpectAndReturn(expected_string[i]);
+    }
+
+    uart_2_controller_receive_string(received_string);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_string, received_string, 12);
+}
+
+void test_receive_string_will_keep_checking_if_theres_no_data_in_rxbuf(void)
+{
+    char expected_string[] = "Hello world\0";
+    char received_string[16];
+    uint8_t i = 0;
+    uint8_t j = 0;
+    
+    for (i = 0; i < 12; i++)
+    {
+        for (j = 0; j < 12; j++)
+        {
+            uart_2_driver_rx_buff_is_empty_ExpectAndReturn(false);
+        }
+        
+        uart_2_driver_rx_buff_is_empty_ExpectAndReturn(true);
+        uart_2_driver_get_rx_reg_ExpectAndReturn(expected_string[i]);
+    }
+
+    uart_2_controller_receive_string(received_string);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_string, received_string, 12);
 }

@@ -43,7 +43,7 @@ bool uart_2_driver_tx_buff_is_full(void);
  *
  * Will return 0x00 if the rx buffer is empty
  */
-uint8_t uart_2_get_rx_reg(void);
+uint8_t uart_2_driver_get_rx_reg(void);
 
 /**
  * Returns if the RX buffer is empty, or if there is data to be read.

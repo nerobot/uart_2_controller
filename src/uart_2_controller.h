@@ -6,4 +6,6 @@
 
 void uart_2_controller_send_string(char * string, uint8_t length);
 
+void uart_2_controller_receive_string(char* string);
+
 #endif // _UART_2_CONTROLLER_H
