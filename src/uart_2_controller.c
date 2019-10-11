@@ -2,6 +2,15 @@
 
 volatile static uint32_t timeout_period = 0;
 
+static bool millis_overrun(uint32_t old_time, uint32_t new_time)
+{
+    if (new_time < old_time)
+    {
+        return true;
+    }
+    return false;
+}
+
 void uart_2_controller_set_timeout(uint32_t timeout)
 {
     timeout_period = timeout;   
@@ -34,6 +43,7 @@ bool uart_2_controller_receive_string(char* string)
     uint32_t start_time = millis();
     uint32_t now_time = 0;
     bool is_empty = false;
+    uint32_t time_diff = 0;
 
     do
     {   
@@ -41,7 +51,16 @@ bool uart_2_controller_receive_string(char* string)
         {
             is_empty = uart_2_driver_rx_buff_is_empty();
             now_time = millis();
-            if ((true == is_empty) && (timeout_period < (now_time - start_time)))
+            if (true == millis_overrun(start_time, now_time))
+            {
+                time_diff = (0xffffffff - start_time) + now_time;
+            }
+            else
+            {
+                time_diff = now_time - start_time;
+            }
+
+            if ((true == is_empty) && (timeout_period < time_diff))
             {
                 return false;
             }

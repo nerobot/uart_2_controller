@@ -14,6 +14,7 @@
 //  # Receiving data
 //  ## Receive string
 //  * when rxbuf has data, save data to array, when byte is '\0' added to array and return value - done
+//  * Same as above, but with millis overflow - done
 //  * when rxbuf is empty, keep checking until there is data available - done
 //  * When string is not returned within a given time, return false. - done
 //  * Same as above, but millis overflows to 0. - done
@@ -213,4 +214,31 @@ void test_receive_string_when_no_string_within_timeout_with_millis_overflow_retu
     char received_string[16];
     bool success = uart_2_controller_receive_string(received_string);
     TEST_ASSERT_FALSE(success);
+}
+
+void test_receive_string_will_keep_checking_if_theres_no_data_in_rxbuf_with_millis_overflow(void)
+{
+    char expected_string[] = "Hello world\0";
+    char received_string[16];
+    uint8_t i = 0;
+    uint8_t j = 0;
+    uint32_t fake_time = 0xffffffff - 10;
+
+    millis_ExpectAndReturn(fake_time++);
+
+    for (i = 0; i < 12; i++)
+    {
+        for (j = 0; j < 12; j++)
+        {
+            uart_2_driver_rx_buff_is_empty_ExpectAndReturn(true);
+            millis_ExpectAndReturn(fake_time++);
+        }
+        
+        uart_2_driver_rx_buff_is_empty_ExpectAndReturn(false);
+        millis_ExpectAndReturn(fake_time++);
+        uart_2_driver_get_rx_reg_ExpectAndReturn(expected_string[i]);
+    }
+    bool success = uart_2_controller_receive_string(received_string);
+    TEST_ASSERT(success);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_string, received_string, 12);
 }

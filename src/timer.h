@@ -14,7 +14,7 @@
  *          has started.
  * @note    Will roll-over after 49.7 days.
  */
-uint16_t millis(void);
+uint32_t millis(void);
 
 #endif
 
