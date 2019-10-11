@@ -15,11 +15,14 @@
 //  ## Receive string
 //  * when rxbuf has data, save data to array, when byte is '\0' added to array and return value - done
 //  * when rxbuf is empty, keep checking until there is data available - done
+//  * When string is not returned within a given time, return false.
+//  * Same as above, but millis overflows to 0.
 //  
 
 #include "unity.h"
 #include "uart_2_controller.h"
 #include "mock_uart_2_driver.h"
+#include "mock_timer.h"
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -30,10 +33,12 @@ volatile U2STABITS U2STAbits;
 
 char string[] = "Hello world/n";
 uint8_t string_size = 0;
+uint16_t timeout_time = 1000;
 
 void setUp(void)
 {
     string_size = strlen(string);
+    uart_2_controller_set_timeout(timeout_time);
 }
 
 void tearDown(void)
@@ -120,7 +125,11 @@ void test_send_string_will_keep_checking_for_tx_reg_to_be_empty_before_returning
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Receiving data
+// # Receiving data
+//
+
+///////////////////////////////////////////////////////////////////////////////
+// ## Receiving string
 //
 
 void test_uart_2_driver_receive_string_all_ok(void)
@@ -128,15 +137,19 @@ void test_uart_2_driver_receive_string_all_ok(void)
     char expected_string[] = "Hello world\0";
     char received_string[16];
     uint8_t i = 0;
-    
+    uint16_t fake_time = 0;
+    millis_ExpectAndReturn(fake_time++);
+
     for (i = 0; i < 12; i++)
     {
-        uart_2_driver_rx_buff_is_empty_ExpectAndReturn(true);
+        uart_2_driver_rx_buff_is_empty_ExpectAndReturn(false);
+        millis_ExpectAndReturn(fake_time++);
         uart_2_driver_get_rx_reg_ExpectAndReturn(expected_string[i]);
     }
 
-    uart_2_controller_receive_string(received_string);
+    bool success = uart_2_controller_receive_string(received_string);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_string, received_string, 12);
+    TEST_ASSERT(success);
 }
 
 void test_receive_string_will_keep_checking_if_theres_no_data_in_rxbuf(void)
@@ -145,18 +158,41 @@ void test_receive_string_will_keep_checking_if_theres_no_data_in_rxbuf(void)
     char received_string[16];
     uint8_t i = 0;
     uint8_t j = 0;
-    
+    uint16_t fake_time = 0;
+    millis_ExpectAndReturn(fake_time++);
+
     for (i = 0; i < 12; i++)
     {
         for (j = 0; j < 12; j++)
         {
-            uart_2_driver_rx_buff_is_empty_ExpectAndReturn(false);
+            uart_2_driver_rx_buff_is_empty_ExpectAndReturn(true);
+            millis_ExpectAndReturn(fake_time++);
         }
         
-        uart_2_driver_rx_buff_is_empty_ExpectAndReturn(true);
+        uart_2_driver_rx_buff_is_empty_ExpectAndReturn(false);
+        millis_ExpectAndReturn(fake_time++);
         uart_2_driver_get_rx_reg_ExpectAndReturn(expected_string[i]);
     }
-
-    uart_2_controller_receive_string(received_string);
+    bool success = uart_2_controller_receive_string(received_string);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_string, received_string, 12);
+    TEST_ASSERT(success);
 }
+
+void test_receive_string_when_no_string_within_timeout_return_false(void)
+{   
+    uint8_t i = 0; 
+    millis_ExpectAndReturn(0);
+    
+    for (i = 0; i < 10; i++)
+    {
+        uart_2_driver_rx_buff_is_empty_ExpectAndReturn(true);
+        millis_ExpectAndReturn(i);
+    }
+    uart_2_driver_rx_buff_is_empty_ExpectAndReturn(true);
+    millis_ExpectAndReturn(2000);
+
+    char received_string[16];
+    bool success = uart_2_controller_receive_string(received_string);
+    TEST_ASSERT_FALSE(success);
+}
+
