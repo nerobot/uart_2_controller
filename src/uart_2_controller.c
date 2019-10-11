@@ -1,8 +1,8 @@
 #include "uart_2_controller.h"
 
-static uint16_t timeout_period = 0;
+volatile static uint32_t timeout_period = 0;
 
-void uart_2_controller_set_timeout(uint16_t timeout)
+void uart_2_controller_set_timeout(uint32_t timeout)
 {
     timeout_period = timeout;   
 }
@@ -31,8 +31,8 @@ bool uart_2_controller_receive_string(char* string)
     char* tmp_string = string;
     char rec_char = '\0';
     uint8_t i = 0;
-    uint16_t start_time = millis();
-    uint16_t now_time = 0;
+    uint32_t start_time = millis();
+    uint32_t now_time = 0;
     bool is_empty = false;
 
     do
