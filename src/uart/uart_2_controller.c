@@ -93,3 +93,19 @@ bool uart_2_controller_add_char_to_cir_buf(char c)
     bool success = circular_buf_add(&tx_cir_buf, c); 
     return success;
 }
+
+bool uart_2_controller_update_tx(void)
+{
+    if (true == circular_buf_is_empty(&tx_cir_buf))
+    {
+        return false;
+    }
+    if (true == uart_2_driver_tx_buff_is_full())
+    {
+        return false;
+    }
+    uint8_t c = circular_buf_get(&tx_cir_buf);
+    uart_2_driver_put_c(c);
+
+    return true;
+}

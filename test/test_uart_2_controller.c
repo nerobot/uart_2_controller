@@ -174,6 +174,44 @@ void test_add_char_to_cir_buf_will_return_false_if_circular_buf_is_full(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  ### Updating txreg from tx cir buf
+//
+
+void test_update_tx_all_ok(void)
+{
+    circular_buf_is_empty_ExpectAndReturn(&tx_cir_buf, false);
+    uart_2_driver_tx_buff_is_full_ExpectAndReturn(false);
+    circular_buf_get_ExpectAndReturn(&tx_cir_buf, 'a');
+    uart_2_driver_put_c_Expect('a');
+
+    bool success = uart_2_controller_update_tx();  
+    TEST_ASSERT(success);
+}
+
+void test_update_tx_if_cir_buf_empty_return_false(void)
+{
+    circular_buf_is_empty_ExpectAndReturn(&tx_cir_buf, true);
+//    uart_2_driver_tx_buff_is_full_ExpectAndReturn(false);
+//    circular_buf_get_ExpectAndReturn(&tx_cir_buf, 'a');
+//    uart_2_driver_put_c_Expect('a');
+
+    bool success = uart_2_controller_update_tx(); 
+    TEST_ASSERT_FALSE(success);
+}
+
+void test_update_tx_if_uart_tx_full_return_false(void)
+{
+    circular_buf_is_empty_ExpectAndReturn(&tx_cir_buf, false);
+    uart_2_driver_tx_buff_is_full_ExpectAndReturn(true);
+//    circular_buf_get_ExpectAndReturn(&tx_cir_buf, 'a');
+//    uart_2_driver_put_c_Expect('a');
+
+    bool success = uart_2_controller_update_tx(); 
+    TEST_ASSERT_FALSE(success);
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // # Receiving data
 //
 
