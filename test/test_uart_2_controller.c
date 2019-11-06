@@ -10,6 +10,11 @@
 //      * when sending string, will check if buffer is empty
 //          * if it is empty, return
 //          * if it is not empty, keep checking until it is.
+//  ## Transmit via tx circular buffer
+//  ### Sending char to circular buffer for sending
+//  * add_char_to_cir_buf will add the single char to cir buf
+//  * if all ok then the function will return true
+//  * if the cir buf is full, the function will return false
 //
 //  # Receiving data
 //  ## Receive string
@@ -19,11 +24,13 @@
 //  * When string is not returned within a given time, return false. - done
 //  * Same as above, but millis overflows to 0. - done
 //  
+//  
 
 #include "unity.h"
 #include "uart_2_controller.h"
 #include "mock_uart_2_driver.h"
 #include "mock_timer.h"
+#include "mock_circular_buf.h"
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -35,6 +42,7 @@ volatile U2STABITS U2STAbits;
 char string[] = "Hello world/n";
 uint8_t string_size = 0;
 uint16_t timeout_time = 1000;
+static circular_buf_t tx_cir_buf;
 
 void setUp(void)
 {
@@ -123,6 +131,40 @@ void test_send_string_will_keep_checking_for_tx_reg_to_be_empty_before_returning
     uart_2_driver_tx_reg_is_empty_ExpectAndReturn(true);
 
     uart_2_controller_send_string(string, string_size);   
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  ## Transmit via tx circular buffer
+//
+
+///////////////////////////////////////////////////////////////////////////////
+//  ### Sending char to circular buffer for sending
+//  * add_char_to_cir_buf will add the single char to cir buf
+//  * if all ok then the function will return true
+//  * if the cir buf is full, the function will return false
+
+void test_add_char_to_cir_buf_will_add_single_char_to_tx_buf(void)
+{
+    circular_buf_is_full_ExpectAndReturn(&tx_cir_buf, false);
+    circular_buf_add_ExpectAndReturn(&tx_cir_buf, 's', true);
+    uart_2_controller_add_char_to_cir_buf('s');
+}
+
+void test_add_char_to_cir_buf_will_return_true_if_all_ok(void)
+{
+    circular_buf_is_full_ExpectAndReturn(&tx_cir_buf, false);
+    circular_buf_add_ExpectAndReturn(&tx_cir_buf, 's', true);
+    bool success = uart_2_controller_add_char_to_cir_buf('s');
+    TEST_ASSERT(success);
+}
+
+void test_add_char_to_cir_buf_will_return_false_if_circular_buf_is_full(void)
+{
+    circular_buf_is_full_ExpectAndReturn(&tx_cir_buf, true);
+//    circular_buf_add_ExpectAndReturn(&tx_cir_buf, 's', false);
+    bool success = uart_2_controller_add_char_to_cir_buf('s');
+    TEST_ASSERT_FALSE(success);
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

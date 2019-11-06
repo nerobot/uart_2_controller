@@ -1,6 +1,7 @@
 #include "uart_2_controller.h"
 
 volatile static uint32_t timeout_period = 0;
+static circular_buf_t tx_cir_buf;
 
 static bool millis_overrun(uint32_t old_time, uint32_t new_time)
 {
@@ -71,4 +72,15 @@ bool uart_2_controller_receive_string(char* string)
     } while ('\0' != rec_char);
 
     return true;
+}
+
+bool uart_2_controller_add_char_to_cir_buf(char c)
+{
+    bool buf_full = circular_buf_is_full(&tx_cir_buf);
+    if (true == buf_full)
+    {
+        return false;
+    }
+    bool success = circular_buf_add(&tx_cir_buf, c); 
+    return success;
 }
