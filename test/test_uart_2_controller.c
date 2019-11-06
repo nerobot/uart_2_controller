@@ -44,10 +44,17 @@ uint8_t string_size = 0;
 uint16_t timeout_time = 1000;
 static circular_buf_t tx_cir_buf;
 
+#define TX_BUF_SIZE     32
+static uint8_t tx_buf_array[TX_BUF_SIZE];
+
+
 void setUp(void)
 {
     string_size = strlen(string);
     uart_2_controller_set_timeout(timeout_time);
+
+    circular_buf_create_ExpectAndReturn(TX_BUF_SIZE, tx_buf_array, &tx_cir_buf, &tx_cir_buf);
+    uart_2_controller_init();
 }
 
 void tearDown(void)
@@ -164,7 +171,6 @@ void test_add_char_to_cir_buf_will_return_false_if_circular_buf_is_full(void)
 //    circular_buf_add_ExpectAndReturn(&tx_cir_buf, 's', false);
     bool success = uart_2_controller_add_char_to_cir_buf('s');
     TEST_ASSERT_FALSE(success);
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////

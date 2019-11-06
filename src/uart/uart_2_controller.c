@@ -1,7 +1,11 @@
 #include "uart_2_controller.h"
 
+#define TX_BUF_SIZE     32
+
 volatile static uint32_t timeout_period = 0;
 static circular_buf_t tx_cir_buf;
+static uint8_t tx_buf_array[TX_BUF_SIZE];
+static circular_buf_t* p_tx_cir_buf = &tx_cir_buf;
 
 static bool millis_overrun(uint32_t old_time, uint32_t new_time)
 {
@@ -10,6 +14,11 @@ static bool millis_overrun(uint32_t old_time, uint32_t new_time)
         return true;
     }
     return false;
+}
+
+void uart_2_controller_init(void)
+{
+    p_tx_cir_buf = circular_buf_create(TX_BUF_SIZE, tx_buf_array, p_tx_cir_buf);
 }
 
 void uart_2_controller_set_timeout(uint32_t timeout)

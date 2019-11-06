@@ -6,6 +6,8 @@
 #include "timer.h"
 #include "circular_buf.h"
 
+void uart_2_controller_init(void);
+
 /**
  * Sets the timeout period for expecting a string to occur
  */
