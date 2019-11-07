@@ -1,11 +1,17 @@
 #include "uart_2_controller.h"
 
 #define TX_BUF_SIZE     32
+#define RX_BUF_SIZE     32
 
 volatile static uint32_t timeout_period = 0;
 static circular_buf_t tx_cir_buf;
 static uint8_t tx_buf_array[TX_BUF_SIZE];
 static circular_buf_t* p_tx_cir_buf = &tx_cir_buf;
+
+static circular_buf_t rx_cir_buf;
+static uint8_t rx_buf_array[RX_BUF_SIZE];
+static circular_buf_t* p_rx_cir_buf = &rx_cir_buf;
+
 
 static bool millis_overrun(uint32_t old_time, uint32_t new_time)
 {
@@ -19,6 +25,7 @@ static bool millis_overrun(uint32_t old_time, uint32_t new_time)
 void uart_2_controller_init(void)
 {
     p_tx_cir_buf = circular_buf_create(TX_BUF_SIZE, tx_buf_array, p_tx_cir_buf);
+    p_rx_cir_buf = circular_buf_create(RX_BUF_SIZE, rx_buf_array, p_rx_cir_buf);
 }
 
 void uart_2_controller_set_timeout(uint32_t timeout)
@@ -109,3 +116,19 @@ bool uart_2_controller_update_tx(void)
 
     return true;
 }
+
+bool uart_2_controller_update_rx(void)
+{
+    if (false == uart_2_driver_rx_buff_is_empty())
+    {
+
+    }
+    if (false == circular_buf_is_full(p_rx_cir_buf))
+    {
+
+    }
+    uint8_t c = uart_2_driver_get_rx_reg();
+    circular_buf_add(p_rx_cir_buf, c);
+    return true;
+}
+

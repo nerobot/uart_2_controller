@@ -21,4 +21,6 @@ bool uart_2_controller_add_char_to_cir_buf(char sting);
 
 bool uart_2_controller_update_tx(void);
 
+bool uart_2_controller_update_rx(void);
+
 #endif // _UART_2_CONTROLLER_H

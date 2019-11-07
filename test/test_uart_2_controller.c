@@ -42,11 +42,14 @@ volatile U2STABITS U2STAbits;
 char string[] = "Hello world/n";
 uint8_t string_size = 0;
 uint16_t timeout_time = 1000;
-static circular_buf_t tx_cir_buf;
 
+static circular_buf_t tx_cir_buf;
 #define TX_BUF_SIZE     32
 static uint8_t tx_buf_array[TX_BUF_SIZE];
 
+static circular_buf_t rx_cir_buf;
+#define RX_BUF_SIZE     32
+static uint8_t rx_buf_array[RX_BUF_SIZE];
 
 void setUp(void)
 {
@@ -54,6 +57,8 @@ void setUp(void)
     uart_2_controller_set_timeout(timeout_time);
 
     circular_buf_create_ExpectAndReturn(TX_BUF_SIZE, tx_buf_array, &tx_cir_buf, &tx_cir_buf);
+    circular_buf_create_ExpectAndReturn(RX_BUF_SIZE, rx_buf_array, &rx_cir_buf, &rx_cir_buf);
+
     uart_2_controller_init();
 }
 
@@ -328,3 +333,23 @@ void test_receive_string_will_keep_checking_if_theres_no_data_in_rxbuf_with_mill
     TEST_ASSERT(success);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_string, received_string, 12);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//  ## Reading data from rx reg into rx cir buf - update_rx
+//
+
+void test_update_rx_all_ok(void)
+{
+    //check if there is anything in the rx reg buffer
+    uart_2_driver_rx_buff_is_empty_ExpectAndReturn(false);
+    // check if there as space in the rx cir buf
+    circular_buf_is_full_ExpectAndReturn(&rx_cir_buf, false);
+    // read data from rx reg
+    uart_2_driver_get_rx_reg_ExpectAndReturn('a');
+    // store data into rx cir buf
+    circular_buf_add_ExpectAndReturn(&rx_cir_buf, 'a', true);
+    // return true
+    bool success = uart_2_controller_update_rx();
+    TEST_ASSERT(success);
+}
+
