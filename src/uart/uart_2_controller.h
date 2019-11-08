@@ -23,4 +23,10 @@ bool uart_2_controller_update_tx(void);
 
 bool uart_2_controller_update_rx(void);
 
+uint8_t uart_2_controller_read_cir_buf_char(void);
+
+uint8_t uart_2_controller_rx_buf_size(void);
+
+uint8_t uart_2_controller_tx_buf_size(void);
+
 #endif // _UART_2_CONTROLLER_H

@@ -119,16 +119,38 @@ bool uart_2_controller_update_tx(void)
 
 bool uart_2_controller_update_rx(void)
 {
-    if (false == uart_2_driver_rx_buff_is_empty())
+    if (true == uart_2_driver_rx_buff_is_empty())
     {
-
+        return false;
     }
-    if (false == circular_buf_is_full(p_rx_cir_buf))
+    if (true == circular_buf_is_full(p_rx_cir_buf))
     {
-
+        return false;
     }
     uint8_t c = uart_2_driver_get_rx_reg();
     circular_buf_add(p_rx_cir_buf, c);
     return true;
 }
+
+uint8_t uart_2_controller_read_cir_buf_char(void)
+{
+    if (true == circular_buf_is_empty(p_rx_cir_buf))
+    {
+        return 0;
+    }
+    uint8_t c = circular_buf_get(p_rx_cir_buf);
+    return c;
+}
+
+
+uint8_t uart_2_controller_rx_buf_size(void)
+{
+    return circular_buf_size(p_rx_cir_buf);
+}
+
+uint8_t uart_2_controller_tx_buf_size(void)
+{
+    return circular_buf_size(p_tx_cir_buf);
+}
+
 

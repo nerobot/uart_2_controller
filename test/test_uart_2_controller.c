@@ -353,3 +353,58 @@ void test_update_rx_all_ok(void)
     TEST_ASSERT(success);
 }
 
+void test_update_rx_and_rx_reg_is_empty_return_false(void)
+{
+    //check if there is anything in the rx reg buffer
+    uart_2_driver_rx_buff_is_empty_ExpectAndReturn(true);
+    // check if there as space in the rx cir buf
+//    circular_buf_is_full_ExpectAndReturn(&rx_cir_buf, false);
+    // read data from rx reg
+//    uart_2_driver_get_rx_reg_ExpectAndReturn('a');
+    // store data into rx cir buf
+//    circular_buf_add_ExpectAndReturn(&rx_cir_buf, 'a', true);
+    // return true
+    bool success = uart_2_controller_update_rx();
+    TEST_ASSERT_FALSE(success);
+}
+
+void test_update_rx_and_cir_buf_is_full_return_false(void)
+{
+    //check if there is anything in the rx reg buffer
+    uart_2_driver_rx_buff_is_empty_ExpectAndReturn(false);
+    // check if there as space in the rx cir buf
+    circular_buf_is_full_ExpectAndReturn(&rx_cir_buf, true);
+    // read data from rx reg
+//    uart_2_driver_get_rx_reg_ExpectAndReturn('a');
+    // store data into rx cir buf
+//    circular_buf_add_ExpectAndReturn(&rx_cir_buf, 'a', true);
+    // return true
+    bool success = uart_2_controller_update_rx();
+    TEST_ASSERT_FALSE(success);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  ## Read char from rx cir buf
+//
+
+void test_read_cir_buf_char_all_ok(void)
+{
+    uint8_t c;
+
+    circular_buf_is_empty_ExpectAndReturn(&rx_cir_buf, false);
+    circular_buf_get_ExpectAndReturn(&rx_cir_buf, 'a');
+
+    c = uart_2_controller_read_cir_buf_char();
+    TEST_ASSERT_EQUAL_UINT8('a', c);
+}
+
+void test_read_cir_buf_char_cir_buf_is_empty_return_0(void)
+{
+    uint8_t c;
+
+    circular_buf_is_empty_ExpectAndReturn(&rx_cir_buf, true);
+ //    circular_buf_get_ExpectAndReturn(&rx_cir_buf, 'a');
+
+    c = uart_2_controller_read_cir_buf_char();
+    TEST_ASSERT_EQUAL_UINT8(0x00, c);
+}
